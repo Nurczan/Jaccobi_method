@@ -3,7 +3,8 @@ import matplotlib.animation as animation
 import csv
 from time import sleep
 
-FILE = "./result"
+FILE = "GAUSS" # filename of mesh data
+ANIM_NAME = "GAUSS_50.ffmpeg"
 temp_arr = []
 ims = []
 fig = plt.figure()
@@ -21,6 +22,6 @@ with open(FILE, newline='') as csvfile:
 ani = animation.ArtistAnimation(fig, ims, interval=30, blit=True,
                                 repeat_delay=1000)
 
-ani.save('dynamic_images.gif')
+ani.save(ANIM_NAME)
 
 plt.show()
