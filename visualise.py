@@ -3,8 +3,8 @@ import matplotlib.animation as animation
 import csv
 from time import sleep
 
-FILE = "GAUSS" # filename of mesh data
-ANIM_NAME = "GAUSS_50.ffmpeg"
+FILE = "JACOB" # filename of mesh data
+ANIM_NAME = "JACOB_50.gif"
 temp_arr = []
 ims = []
 fig = plt.figure()
