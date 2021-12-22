@@ -4,6 +4,8 @@ from math import *
 from pprint import pprint
 from time import time
 import sys
+import random
+from enum import Enum
 
 # csv format
 # 5 - mesh dim
@@ -14,6 +16,12 @@ import sys
 # h - in meters ex. 0.001
 # f(x,y)= sin(x)+sin(y)
 # residual
+
+class Algs(Enum):
+    RANDOM = "random"
+    GAUSS = "normal_gauss"
+    JACOB = "normal_jacob"
+    EDGE = "edge"
 
 class Mesh:
 
@@ -33,9 +41,18 @@ class Mesh:
         self.generate_mesh()
 
         self.buffer_mesh = deepcopy(self.mesh)
-        pprint(f"mesh: {self.mesh}")
+
+        self.indicies = []
+
+        for i in range(1, self.dims-1):
+            for j in range(1,self.dims-1):
+                self.indicies.append((i,j))
+
         pprint(f"function: {self.function}")
         pprint(f"h: {self.h}")
+
+        self.algorithms_dict = {Algs.JACOB.value : self.normal_iter_jacob, Algs.GAUSS.value : self.normal_iter_gauss\
+            ,Algs.EDGE.value : self.edge_iter, Algs.RANDOM.value : self.random_iter}
     
     def generate_mesh(self):
         minimum = min(self.top,self.right,self.left,self.down)
@@ -52,23 +69,16 @@ class Mesh:
         exec(f"a = {self.function}", d)
         return d["a"]
     
-    def calculate(self, method, filename : str = "result"):
-        __method = None
+    def calculate(self, method : str, filename : str = "result"):
+        __method = self.algorithms_dict[method]
         error = 9999
         iter_no = 0
-
-        if method == "normal_jacob":
-            ___method = self.normal_iter_jacob
-        elif method == "normal_gauss":
-            ___method = self.normal_iter_gauss
-        else:
-            raise AttributeError
 
         time_before = time()
         with open(filename,"w+",newline='') as res:
             write = csv.writer(res) 
             while error > self.error_threshold:
-                error = ___method()
+                error = __method()
                 iter_no += 1
                 write.writerows(self.mesh)
                 write.writerow("")
@@ -78,6 +88,46 @@ class Mesh:
         self.generate_mesh()
 
         print(f"\nsimulation of {method} ended in: {iter_no} iterations with error: {error} in {time_after-time_before}\n")
+
+
+    def random_iter(self):
+        choices = deepcopy(self.indicies)
+        error = -1
+        for i in range(1,self.dims-1):
+            for j in range(1,self.dims-1):
+                vec = random.choice(choices)
+                error = max(self.calculation_gauss(vec[0],vec[1]),error)
+        return error
+
+    def edge_iter(self):
+        vec = None
+        temp_vec = [1,1]
+        path_len = self.dims - 3
+        error = -1
+        
+        while path_len > 0:
+            vec = deepcopy(temp_vec)
+            for i in range(path_len):
+                vec[0] += 1
+                error = max(self.calculation_gauss(vec[0],vec[1]),error)
+            for i in range(path_len):
+                vec[1] += 1
+                error = max(self.calculation_gauss(vec[0],vec[1]),error)
+            for i in range(path_len):
+                vec[0] -= 1
+                error = max(self.calculation_gauss(vec[0],vec[1]),error)
+            for i in range(path_len):
+                vec[1] -= 1
+                error = max(self.calculation_gauss(vec[0],vec[1]),error)
+            temp_vec[0] += 1
+            temp_vec[1] += 1
+            path_len -= 2
+        
+        if path_len == 0:
+            error = max(self.calculation_gauss(temp_vec[0],temp_vec[1]),error)
+        
+        return error
+
     #region JACOBI
     def normal_iter_jacob(self):
         error = -1
@@ -115,3 +165,5 @@ if __name__ == "__main__":
     sim = Mesh("./input.csv")
     sim.calculate("normal_gauss", "GAUSS")
     sim.calculate("normal_jacob", "JACOB")
+    sim.calculate("random", "RANDOM")
+    sim.calculate("edge", "EDGE")

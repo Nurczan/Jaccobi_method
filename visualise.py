@@ -3,8 +3,8 @@ import matplotlib.animation as animation
 import csv
 from time import sleep
 
-FILE = "JACOB" # filename of mesh data
-ANIM_NAME = "JACOB_50.gif"
+FILE = "EDGE" # filename of mesh data
+ANIM_NAME = "EDGE_40.gif"
 temp_arr = []
 ims = []
 fig = plt.figure()
@@ -18,10 +18,10 @@ with open(FILE, newline='') as csvfile:
             temp_arr.clear()
         else:
             temp_arr.append([float(elem) for elem in row])
+plt.colorbar()
 
 ani = animation.ArtistAnimation(fig, ims, interval=30, blit=True,
                                 repeat_delay=1000)
-
 ani.save(ANIM_NAME)
 
 plt.show()

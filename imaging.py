@@ -11,4 +11,5 @@ with open(FILE, newline='') as csvfile:
         ims.append([float(elem) for elem in row])
 
 plt.imshow(ims)
+plt.colorbar()
 plt.show()
